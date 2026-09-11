@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ AI-Powered Content Moderation System
+# AI-Powered Content Moderation System
 ### Detecting Hate Speech & Trolls in Indian Social Media
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
@@ -20,7 +20,7 @@ backend and a React dashboard.
 
 ---
 
-## 📋 The Problem
+## The Problem
 
 Social media use in India spans hundreds of millions of users across
 English, Hindi, and code-mixed Hinglish. Manual moderation can't keep
@@ -30,7 +30,7 @@ sarcasm, and culturally specific slurs. This project builds a working,
 explainable, fully free-tier-deployable moderation system as a step
 toward closing that gap.
 
-## ✨ Features
+## Features
 
 - **3-class detection** — `SAFE`, `OFFENSIVE`, `HATE` — with a confidence
   score per class, not just a single label.
@@ -43,7 +43,7 @@ toward closing that gap.
 - **Zero-cost stack** — every service used has a free tier that covers
   this project end to end. See [Tech Stack](#-tech-stack).
 
-## 📸 Example
+## Example
 
 > `"he is idiot"` → **OFFENSIVE** (85% confident) — `SAFE 13% · OFFENSIVE 85% · HATE 3%`, with **"idiot"** highlighted as the driving word.
 
@@ -51,7 +51,7 @@ toward closing that gap.
 ![Analyze screen screenshot](docs/screenshots/analyze-demo.png)
 -->
 
-## 🧠 The Model
+## The Model
 
 | | |
 |---|---|
@@ -70,7 +70,7 @@ documented next milestone — see [Roadmap](#-roadmap), not an oversight.
 Full reasoning behind the label schema, model choice, and training
 hyperparameters lives in [`docs/07_AI_Model.md`](docs/07_AI_Model.md).
 
-## 🏗️ How It Works
+## How It Works
 
 ```mermaid
 flowchart LR
@@ -99,7 +99,7 @@ More diagrams (training pipeline, request sequences) are in
 
 Full rationale for every choice: [`docs/03_Tech_Stack.md`](docs/03_Tech_Stack.md).
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
@@ -122,7 +122,7 @@ Full rationale for every choice: [`docs/03_Tech_Stack.md`](docs/03_Tech_Stack.md
         └── pages/
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Backend
 
@@ -158,28 +158,8 @@ GET  /api/v1/stats?range=7d      aggregate counts + timeline + recent activity
 
 Full request/response contract: [`docs/02_TRD.md`](docs/02_TRD.md) §5.
 
-## 🌐 Live Demo
 
-| | |
-|---|---|
-| Frontend | 🔧 *add your Vercel URL here* |
-| Backend | 🔧 *add your Render URL here* |
-
-> Free-tier backends spin down after inactivity — the first request after
-> idle time can take 30–50 seconds to respond.
-
-## 🗺️ Roadmap
-
-- [x] Merge & clean English hate-speech datasets into a unified schema
-- [x] Fine-tune and evaluate a baseline transformer model
-- [x] Build and connect backend + frontend end to end
-- [ ] Deploy to Vercel / Render / Supabase
-- [ ] Run the full manual test matrix (safe / offensive / hate / edge cases)
-- [ ] **Milestone 2:** add Hindi/Hinglish data (HASOC, HateXplain,
-      L3Cube-HingCorpus) and switch to `google/muril-base-cased`
-- [ ] Multimodal moderation (OCR on images/memes) — noted as future work
-
-## ⚠️ Limitations
+## Limitations
 
 - English-only baseline (see above).
 - The `HATE` class is a documented approximation from merging two
@@ -189,7 +169,7 @@ Full request/response contract: [`docs/02_TRD.md`](docs/02_TRD.md) §5.
 - This system **flags** content for human review; it does not
   auto-delete or auto-ban anything.
 
-## 📚 Citations
+## Citations
 
 ```bibtex
 @inproceedings{davidson2017automated,
@@ -207,13 +187,11 @@ Full request/response contract: [`docs/02_TRD.md`](docs/02_TRD.md) §5.
 }
 ```
 
-## 📄 License
 
-🔧 *Add a LICENSE file (MIT is a common default for practicum/academic
-projects) and reference it here.*
+## Credits
 
-## 🙏 Acknowledgments
+Dataset credit to Davidson et al. (2017) and the OLID/OffensEval team (Zampieri et al., 2019).
 
-Built as part of an Innovation Practicum project. Dataset credit to
-Davidson et al. (2017) and the OLID/OffensEval team (Zampieri et al.,
-2019).
+## Author 
+
+As always Lohith G
