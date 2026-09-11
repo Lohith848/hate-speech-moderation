@@ -5,22 +5,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .db import Base, engine
 from .model import load_model, is_ready
-from .routes import moderate, stats
-
-# Creates the moderation_log table if it doesn't exist yet. For SQLite this
-# just works. For Postgres/Supabase this also works fine for a practicum
-# project -- a real production app would use Alembic migrations instead.
-Base.metadata.create_all(bind=engine)
 
 
 @asynccontextmanager
 async def lifespan(app):
-    """Startup: kick off model download in a background thread so the
-    server can bind its port immediately (Render's free-tier port scan
-    times out after ~5 minutes -- the old design blocked port binding
-    for the entire download duration and got killed)."""
+    """Startup: create DB tables and kick off model download in a background
+    thread so the server can bind its port immediately (Render's free-tier
+    port scan times out after ~5 minutes)."""
+    # Import DB here (not at module top level) so a bad DATABASE_URL
+    # doesn't crash the app before the port is bound.
+    try:
+        from .db import Base, engine
+        Base.metadata.create_all(bind=engine)
+        print("[db] Tables created / verified.")
+    except Exception as e:
+        print(f"[db] WARNING: could not connect to database: {e}")
+        print("[db] The app will start but /moderate and /stats will fail.")
+
     thread = threading.Thread(target=load_model, daemon=True)
     thread.start()
     yield
@@ -43,6 +45,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Import routes AFTER app is created — they don't need DB at import time,
+# only at request time.
+from .routes import moderate, stats  # noqa: E402
 
 app.include_router(moderate.router)
 app.include_router(stats.router)
