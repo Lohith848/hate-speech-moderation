@@ -1,48 +1,81 @@
 """
-Loads the fine-tuned model ONCE at import time (i.e. once per server
-process, not once per request -- this is the single biggest latency
-lever on a free-tier CPU box, see docs/02_TRD.md section 6).
+Loads the fine-tuned model in a background thread so the server can bind
+its port immediately (required for Render's free-tier port scan, which
+times out after ~5 minutes -- see docs/02_TRD.md section 6).
+
+The old design loaded the model at import time, which blocked port binding
+for the entire download+load duration and caused Render to kill the service.
 """
+import threading
+
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from .config import MODEL_REPO
 
-print(f"[model] Loading '{MODEL_REPO}' from Hugging Face Hub ...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_REPO)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_REPO)
-model.eval()
+# Module-level state — populated by load_model(), read by predict().
+_tokenizer = None
+_model = None
+_device = None
+_id2label = None
+_ready = threading.Event()  # signals "model is loaded and ready"
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model.to(device)
 
-id2label = model.config.id2label
-print(f"[model] Loaded on device={device}. Labels: {id2label}")
-if set(id2label.values()) != {"SAFE", "OFFENSIVE", "HATE"}:
-    print(
-        "[model] WARNING: expected labels SAFE/OFFENSIVE/HATE but got "
-        f"{list(id2label.values())}. Check that the model was pushed with "
-        "id2label set correctly during training (see the training notebook, "
-        "Step 7)."
-    )
+def load_model():
+    """Download and load the model. Call once from a background thread at
+    startup (see main.py lifespan). Safe to call multiple times -- only the
+    first call does work."""
+    global _tokenizer, _model, _device, _id2label
+
+    if _ready.is_set():
+        return
+
+    print(f"[model] Loading '{MODEL_REPO}' from Hugging Face Hub ...")
+    _tokenizer = AutoTokenizer.from_pretrained(MODEL_REPO)
+    _model = AutoModelForSequenceClassification.from_pretrained(MODEL_REPO)
+    _model.eval()
+
+    _device = "cuda" if torch.cuda.is_available() else "cpu"
+    _model.to(_device)
+
+    _id2label = _model.config.id2label
+    print(f"[model] Loaded on device={_device}. Labels: {_id2label}")
+    if set(_id2label.values()) != {"SAFE", "OFFENSIVE", "HATE"}:
+        print(
+            "[model] WARNING: expected labels SAFE/OFFENSIVE/HATE but got "
+            f"{list(_id2label.values())}. Check that the model was pushed with "
+            "id2label set correctly during training (see the training notebook, "
+            "Step 7)."
+        )
+
+    _ready.set()
+    print("[model] Ready to serve predictions.")
+
+
+def is_ready() -> bool:
+    """True once the model has been fully loaded."""
+    return _ready.is_set()
 
 
 def _softmax_probs(text: str):
-    inputs = tokenizer(
+    inputs = _tokenizer(
         text, truncation=True, padding=True, max_length=128, return_tensors="pt"
-    ).to(device)
+    ).to(_device)
     with torch.no_grad():
-        logits = model(**inputs).logits
+        logits = _model(**inputs).logits
     probs = torch.softmax(logits, dim=1)[0]
     return probs, logits
 
 
 def predict(text: str):
     """Returns (label: str, confidence: dict[str, float], explanation: list[dict])"""
+    if not _ready.is_set():
+        raise RuntimeError("Model is still loading")
+
     probs, logits = _softmax_probs(text)
     predicted_id = int(torch.argmax(logits, dim=1)[0])
-    label = id2label[predicted_id]
-    confidence = {id2label[i]: round(p.item(), 4) for i, p in enumerate(probs)}
+    label = _id2label[predicted_id]
+    confidence = {_id2label[i]: round(p.item(), 4) for i, p in enumerate(probs)}
 
     explanation = _explain(text, label_id=predicted_id, base_prob=probs[predicted_id].item())
     return label, confidence, explanation

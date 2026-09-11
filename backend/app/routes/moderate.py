@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..model import predict
+from ..model import predict, is_ready
 from ..models_db import ModerationLog
 from ..schemas import ModerateRequest, ModerateResponse
 
@@ -14,6 +14,11 @@ router = APIRouter(prefix="/api/v1", tags=["moderate"])
 
 
 def _run_and_log(text: str, source: str, db: Session) -> ModerateResponse:
+    if not is_ready():
+        raise HTTPException(
+            status_code=503,
+            detail="Model is still loading, please try again in a moment.",
+        )
     label, confidence, explanation = predict(text)
 
     log = ModerationLog(
