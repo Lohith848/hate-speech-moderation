@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+transformers
+torch
+sqlalchemy
+pydantic
+python-dotenv
+pandas
+psycopg2-binary

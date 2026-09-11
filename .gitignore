@@ -1,0 +1,30 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Node
+node_modules/
+
+# Environment files (contain secrets)
+.env
+
+# Local SQLite database
+dev.db
+
+# Model weight files (pushed to Hugging Face Hub, not Git)
+*.pt
+*.bin
+*.safetensors
+*.onnx
+moderation-model.zip
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
