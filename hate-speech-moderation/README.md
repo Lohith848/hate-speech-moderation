@@ -1,6 +1,6 @@
 # AI-Powered Content Moderation System
 ### Detecting Hate Speech & Trolls in Indian Social Media
-**Innovation Practicum 3 — Project Documentation Set**
+
 
 ---
 
