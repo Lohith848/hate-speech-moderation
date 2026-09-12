@@ -37,10 +37,17 @@ def load_model():
         print(f"[model] Loading ONNX model '{MODEL_REPO}' from Hugging Face Hub ...")
         _tokenizer = AutoTokenizer.from_pretrained(MODEL_REPO)
         config = AutoConfig.from_pretrained(MODEL_REPO)
-        _id2label = {int(k): v for k, v in config.id2label.items()}
 
-        print(f"[model] Downloading model.onnx from '{MODEL_REPO}' ...")
-        onnx_path = hf_hub_download(repo_id=MODEL_REPO, filename="model.onnx")
+        raw_id2label = getattr(config, "id2label", None) or {0: "SAFE", 1: "OFFENSIVE", 2: "HATE"}
+        _id2label = {int(k): v for k, v in raw_id2label.items()}
+
+        if os.path.exists(MODEL_REPO) and os.path.isdir(MODEL_REPO):
+            onnx_path = os.path.join(MODEL_REPO, "model.onnx")
+        elif os.path.isfile(MODEL_REPO):
+            onnx_path = MODEL_REPO
+        else:
+            print(f"[model] Downloading model.onnx from '{MODEL_REPO}' ...")
+            onnx_path = hf_hub_download(repo_id=MODEL_REPO, filename="model.onnx")
 
         # CPUExecutionProvider for lightweight, stable free-tier CPU inference
         _session = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
@@ -51,6 +58,7 @@ def load_model():
         print("[model] Ready to serve predictions.")
     except Exception as e:
         print(f"[model] ERROR loading model '{MODEL_REPO}': {e}")
+        print("[model] Note: Ensure you have run export_and_quantize_model.ipynb in Google Colab to upload the quantized model to Hugging Face.")
 
 
 def is_ready() -> bool:
