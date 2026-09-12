@@ -3,10 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Your fine-tuned model on Hugging Face Hub.
-# Double-check this against your actual model page -- HF sometimes shows a
-# different canonical name than the one you typed in push_to_hub().
-MODEL_REPO = os.getenv("MODEL_REPO", "lohithg8408/content-moderation")
+# Your quantized ONNX model on Hugging Face Hub.
+MODEL_REPO = os.getenv("MODEL_REPO", "lohithg8408/content-moderation-onnx-int8")
 
 # SQLite for local dev by default. In production (Render), set DATABASE_URL
 # as an environment variable pointing at your Supabase Postgres connection

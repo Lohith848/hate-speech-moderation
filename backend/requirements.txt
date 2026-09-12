@@ -1,7 +1,9 @@
 fastapi
 uvicorn[standard]
+onnxruntime
 transformers
-torch
+huggingface_hub
+numpy
 sqlalchemy
 pydantic
 python-dotenv
