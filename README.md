@@ -192,6 +192,7 @@ Full request/response contract: [`docs/02_TRD.md`](docs/02_TRD.md) §5.
 
 Dataset credit to Davidson et al. (2017) and the OLID/OffensEval team (Zampieri et al., 2019).
 
+
 ## Author 
 
-As always Lohith G
+As always Lohith G.
