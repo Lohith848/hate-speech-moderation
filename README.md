@@ -1,6 +1,7 @@
 <div align="center">
 
 # AI-Powered Content Moderation System
+
 ### Detecting Hate Speech & Trolls in Indian Social Media.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
